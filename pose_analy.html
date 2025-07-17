@@ -9,366 +9,217 @@
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose/pose.js" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+        :root {
+            --primary: #2d3a4b;
+            --accent: #4f8cff;
+            --bg: #f6f8fa;
+            --panel: #fff;
+            --border: #e3e7ed;
+            --success: #27ae60;
+            --warning: #f39c12;
+            --danger: #e74c3c;
+            --text: #222;
+            --muted: #7b8a9b;
         }
-
+        html, body {
+            height: 100%;
+        }
         body {
-            font-family: 'Arial', sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: #333;
+            font-family: 'Inter', Arial, sans-serif;
+            background: var(--bg);
+            color: var(--text);
             min-height: 100vh;
         }
-
         .container {
-            max-width: 1800px;
+            max-width: 1100px;
             margin: 0 auto;
-            padding: 20px;
-            padding-bottom: 60px; /* 하단 패널 가림 방지 */
-            position: relative;
+            padding: 0 8px 32px 8px;
         }
-        /* 로고 크기 및 위치 개선, 헤더와 높이 맞춤 */
         .logo-absolute {
-            position: absolute;
-            top: 32px;
-            left: 1px;
-            z-index: 10;
-            width: 140px;
-            height: 80px; /* 헤더 높이와 맞춤 */
-            display: flex;
-            align-items: center;
-            justify-content: flex-start;
-            background: none;
+            position: static;
+            width: 90px;
+            height: 40px;
+            margin-right: 18px;
         }
         .logo-absolute img {
             width: 100%;
             height: 100%;
             object-fit: contain;
-            background: none;
         }
-
-        /* 반응형: 모바일에서 로고와 헤더 크기 축소 */
-        @media (max-width: 768px) {
-            .logo-absolute {
-                top: 10px;
-                left: 10px;
-                width: 70px;
-                height: 40px;
-            }
-            .header {
-                margin-left: 80px;
-                margin-right: 80px;
-                margin-top: 5px;
-                height: 48px;
-                font-size: 1rem;
-            }
-            .header-texts h1 {
-                font-size: 1rem;
-            }
-            .header-texts p {
-                font-size: 0.8rem;
-            }
-        }
-
         .header {
-            background: rgba(255, 255, 255, 0.95);
-            padding: 10px 24px;      /* 좌우/상하 여백 */
-            border-radius: 15px;
-            text-align: left;
-            margin-bottom: 20px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-            margin-left: 200px; /* 로고 공간만큼 왼쪽 여백 */
-            margin-right: 200px;
-            margin-top: 10px;
-            height: 70px;
             display: flex;
             align-items: center;
-            justify-content: center;
+            justify-content: space-between;
+            background: var(--panel);
+            border-radius: 16px;
+            box-shadow: 0 2px 12px rgba(44, 62, 80, 0.08);
+            padding: 18px 32px 18px 24px;
+            margin: 32px auto 32px auto;
+            max-width: 1100px;
+            min-height: 70px;
         }
-        .header-row {
-            display: flex;
-            align-items: center;
-            gap: 18px;
-        }
-        .logo img, .logo {
-            height: 40px;
-            width: 40px;
-            display: block;
-        }
-        .header-texts {
-            width: 100%;
+        .header-center {
+            flex: 1;
             text-align: center;
         }
         .header-texts h1 {
-            color: #2c3e50;
-            font-size: 1.5rem;
+            font-size: 1.35rem;
+            font-weight: 700;
+            color: var(--primary);
             margin-bottom: 2px;
+            letter-spacing: -0.5px;
         }
         .header-texts p {
-            font-size: 1rem;
+            font-size: 0.97rem;
+            color: var(--muted);
+            margin: 0;
         }
-
-        .main-layout {
-            display: grid;
-            grid-template-rows: 1fr auto;
-            gap: 20px;
-            height: calc(100vh - 200px);
-        }
-
-        .top-grid {
-            display: grid;
-            grid-template-columns: 2fr 1fr;
-            gap: 20px;
-            min-height: 500px;
-        }
-
-        .video-section {
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: 15px;
-            padding: 20px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        .header-controls {
             display: flex;
-            flex-direction: column;
+            gap: 8px;
         }
-
-        .video-container {
-            position: relative;
+        .btn {
+            padding: 8px 18px;
+            font-size: 0.98rem;
+            border-radius: 7px;
+            margin: 0;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            background: var(--accent);
+            color: #fff;
+            transition: background 0.2s, box-shadow 0.2s;
+            box-shadow: 0 2px 8px rgba(79, 140, 255, 0.08);
+        }
+        .btn-primary { background: var(--accent); }
+        .btn-primary:hover { background: #2563eb; }
+        .btn-danger { background: var(--danger); }
+        .btn-danger:hover { background: #c0392b; }
+        .btn-success { background: var(--success); }
+        .btn-success:hover { background: #219150; }
+        .main-layout {
+            display: flex;
+            gap: 28px;
+            align-items: flex-start;
+        }
+        .video-section, .analysis-panel, .charts-section {
+            background: var(--panel);
+            border-radius: 14px;
+            box-shadow: 0 2px 12px rgba(44, 62, 80, 0.07);
+            padding: 18px 18px 14px 18px;
+            margin-bottom: 0;
+        }
+        .video-section {
+            flex: 1.2;
+            min-width: 420px;
+        }
+        .analysis-panel {
             flex: 1;
+            min-width: 320px;
+            margin-left: 0;
+        }
+        .charts-section {
+            margin-top: 24px;
+            padding: 18px 18px 10px 18px;
+        }
+        .video-container {
             border-radius: 10px;
             overflow: hidden;
             background: #000;
+            min-height: 340px;
+            box-shadow: 0 1px 6px rgba(44, 62, 80, 0.08);
+            position: relative;
         }
-
-        #videoElement {
+        #videoElement, #canvasElement {
             position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            /*object-fit: cover;*/
-            z-index: 1;
-            /*display: block;*/
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            object-fit: contain;
         }
-
         #canvasElement {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: transparent;
             z-index: 2;
             pointer-events: none;
         }
-
-        .controls {
-            display: flex;
-            justify-content: center;
-            gap: 15px;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
-            z-index: 10;
-            background: none;
-        }
-
-        .btn {
-            padding: 12px 24px;
-            border: none;
-            border-radius: 25px;
-            font-size: 1rem;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .btn-primary {
-            background: linear-gradient(45deg, #667eea, #764ba2);
-            color: white;
-        }
-
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
-        }
-
-        .btn-danger {
-            background: linear-gradient(45deg, #ff6b6b, #ee5a24);
-            color: white;
-        }
-
-        .btn-danger:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(255, 107, 107, 0.4);
-        }
-
-        .btn-success {
-            background: linear-gradient(45deg, #55a3ff, #3742fa);
-            color: white;
-        }
-
-        .btn-success:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(85, 163, 255, 0.4);
-        }
-
-        .analysis-panel {
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: 15px;
-            padding: 20px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-            overflow-y: auto;
-        }
-
-        .charts-section {
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: 15px;
-            padding: 20px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-            height: 350px;
-        }
-
-        .charts-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-            padding-bottom: 10px;
-            border-bottom: 2px solid #e9ecef;
-        }
-
-        .charts-title {
-            font-size: 1.5rem;
-            font-weight: bold;
-            color: #2c3e50;
-        }
-
-        .charts-stats {
-            display: flex;
-            gap: 20px;
-            font-size: 0.9rem;
-        }
-
-        .stat-item {
-            text-align: center;
-        }
-
-        .stat-value {
-            font-size: 1.2rem;
-            font-weight: bold;
-            color: #3498db;
-        }
-
-        .stat-label {
-            color: #7f8c8d;
-            font-size: 0.8rem;
-        }
-
-        .charts-container {
-            display: grid;
-            grid-template-columns: 1fr 1fr 1fr 1fr;
-            gap: 20px;
-            height: 250px;
-        }
-
-        .chart-card {
-            background: #f8f9fa;
-            border-radius: 10px;
-            padding: 15px;
-            position: relative;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-        }
-
-        .chart-title {
-            font-size: 0.9rem;
-            font-weight: bold;
-            color: #495057;
-            margin-bottom: 10px;
-            text-align: center;
-        }
-
-        .chart-canvas {
-            width: 100% !important;
-            height: 180px !important;
-        }
-
         .status-card {
-            background: #f8f9fa;
-            border-radius: 10px;
-            padding: 15px;
-            margin-bottom: 15px;
-            border-left: 4px solid #28a745;
+            background: #f4f8fb;
+            border-radius: 8px;
+            padding: 14px 18px;
+            margin-bottom: 0;
+            border-left: 4px solid var(--success);
+            font-size: 1.08rem;
+            color: var(--primary);
         }
-
-        .status-card.warning {
-            border-left-color: #ffc107;
-            background: #fff3cd;
+        .status-card.warning { border-left-color: var(--warning); background: #fffbe6; color: #b47d00; }
+        .status-card.danger { border-left-color: var(--danger); background: #fff0f0; color: #c0392b; }
+        .metricsPanel, #metricsPanel {
+            background: #f8fafc;
+            border-radius: 8px;
+            padding: 14px 18px;
+            margin-bottom: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
         }
-
-        .status-card.danger {
-            border-left-color: #dc3545;
-            background: #f8d7da;
-        }
-
         .metric {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 10px;
-            padding: 8px 0;
-            border-bottom: 1px solid #eee;
+            font-size: 1.01rem;
+            padding: 4px 0;
         }
-
-        .metric:last-child {
-            border-bottom: none;
-            margin-bottom: 0;
-        }
-
         .metric-label {
-            font-weight: bold;
-            color: #495057;
+            color: var(--muted);
+            font-weight: 500;
         }
-
         .metric-value {
-            font-weight: bold;
-            padding: 4px 8px;
-            border-radius: 15px;
-            font-size: 0.9rem;
+            font-weight: 600;
+            padding: 2px 10px;
+            border-radius: 12px;
+            font-size: 1rem;
         }
-
-        .metric-value.good {
-            background: #d4edda;
-            color: #155724;
+        .metric-value.good { background: #eafaf1; color: var(--success); }
+        .metric-value.warning { background: #fff7e6; color: var(--warning); }
+        .metric-value.danger { background: #ffeaea; color: var(--danger); }
+        .recommendations {
+            background: #f4f8fb;
+            border-radius: 8px;
+            padding: 14px 18px;
+            margin-top: 0;
         }
-
-        .metric-value.warning {
-            background: #fff3cd;
-            color: #856404;
+        .recommendations h3 {
+            color: var(--primary);
+            font-size: 1.08rem;
+            margin-bottom: 8px;
         }
-
-        .metric-value.danger {
-            background: #f8d7da;
-            color: #721c24;
+        .recommendations ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
         }
-
+        .recommendations li {
+            padding: 4px 0;
+            color: var(--accent);
+            font-size: 0.97rem;
+        }
+        .recommendations li:before {
+            content: "💡 ";
+            margin-right: 5px;
+        }
         .vlm-analysis {
-            background: #e8f4fd;
-            border-radius: 10px;
-            padding: 15px;
-            margin-top: 15px;
-            border-left: 4px solid #2196f3;
+            background: #f4f8fb;
+            border-radius: 8px;
+            padding: 14px 18px;
+            margin-top: 0;
+            border-left: 4px solid var(--accent);
         }
-
         .vlm-analysis h3 {
-            color: #1976d2;
-            margin-bottom: 10px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
+            color: var(--accent);
+            margin-bottom: 8px;
+            font-size: 1.08rem;
         }
-
         .vlm-loading {
             display: flex;
             align-items: center;
@@ -376,102 +227,47 @@
             color: #666;
             font-style: italic;
         }
-
         .loading-spinner {
-            width: 20px;
-            height: 20px;
+            width: 18px;
+            height: 18px;
             border: 2px solid #e3e3e3;
-            border-top: 2px solid #3498db;
+            border-top: 2px solid var(--accent);
             border-radius: 50%;
             animation: spin 1s linear infinite;
         }
-
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
-
-        .recommendations {
-            background: #e3f2fd;
-            border-radius: 10px;
-            padding: 15px;
-            margin-top: 15px;
-        }
-
-        .recommendations h3 {
-            color: #1565c0;
-            margin-bottom: 10px;
-        }
-
-        .recommendations ul {
-            list-style: none;
-            padding: 0;
-        }
-
-        .recommendations li {
-            padding: 5px 0;
-            color: #1976d2;
-        }
-
-        .recommendations li:before {
-            content: "💡 ";
-            margin-right: 5px;
-        }
-
         .snapshot-section {
-            background: #f8f9fa;
-            border-radius: 10px;
-            padding: 15px;
-            margin-top: 15px;
+            background: #f8fafc;
+            border-radius: 8px;
+            padding: 14px 18px;
+            margin-top: 0;
         }
-
         .snapshot-section h3 {
-            margin-bottom: 10px;
-            color: #495057;
+            margin-bottom: 8px;
+            color: var(--primary);
+            font-size: 1.08rem;
         }
-
         #snapshotCanvas {
             width: 100%;
-            max-width: 300px;
-            border: 2px solid #dee2e6;
+            max-width: 260px;
+            border: 1.5px solid var(--border);
             border-radius: 8px;
         }
-
-        @media (max-width: 1400px) {
-            .charts-container {
-                grid-template-columns: 1fr 1fr;
-                grid-template-rows: 1fr 1fr;
-            }
-        }
-
-        @media (max-width: 768px) {
-            .top-grid {
-                grid-template-columns: 1fr;
-                grid-template-rows: auto auto;
-            }
-            
-            .charts-container {
-                grid-template-columns: 1fr;
-                grid-template-rows: repeat(4, 1fr);
-                height: auto;
-            }
-            
-            .charts-section {
-                height: auto;
-            }
-        }
-
         .event-timeline {
-            background: #f8f9fa;
-            border-radius: 10px;
-            padding: 15px;
-            margin-top: 15px;
-            max-height: 200px;
+            background: #f8fafc;
+            border-radius: 8px;
+            padding: 14px 18px;
+            margin-top: 0;
+            max-height: 180px;
             overflow-y: auto;
         }
         .event-timeline h3 {
-            margin-bottom: 10px;
-            color: #495057;
+            margin-bottom: 8px;
+            color: var(--primary);
+            font-size: 1.08rem;
         }
         .event-timeline ul {
             list-style: none;
@@ -479,16 +275,95 @@
             margin: 0;
         }
         .event-timeline li {
-            padding: 5px 0;
-            color: #1976d2;
-            font-size: 0.95rem;
+            padding: 4px 0;
+            color: var(--accent);
+            font-size: 0.97rem;
         }
         .event-timeline li:before {
             content: "⏱️ ";
             margin-right: 5px;
         }
+        .charts-section {
+            background: var(--panel);
+            border-radius: 12px;
+            box-shadow: 0 2px 12px rgba(44, 62, 80, 0.06);
+            padding: 24px;
+            margin-top: 0;
+        }
+        .charts-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 18px;
+            padding-bottom: 8px;
+            border-bottom: 1.5px solid var(--border);
+        }
+        .charts-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--primary);
+        }
+        .charts-stats {
+            display: flex;
+            gap: 18px;
+            font-size: 0.97rem;
+        }
+        .stat-item {
+            text-align: center;
+        }
+        .stat-value {
+            font-size: 1.08rem;
+            font-weight: 600;
+            color: var(--accent);
+        }
+        .stat-label {
+            color: var(--muted);
+            font-size: 0.85rem;
+        }
+        .charts-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr 1fr;
+            gap: 18px;
+            height: 180px;
+        }
+        .chart-card {
+            background: #f8fafc;
+            border-radius: 8px;
+            padding: 10px;
+            position: relative;
+            box-shadow: 0 1px 6px rgba(44, 62, 80, 0.04);
+        }
+        .chart-title {
+            font-size: 0.97rem;
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 6px;
+            text-align: center;
+        }
+        .chart-canvas {
+            width: 100% !important;
+            height: 120px !important;
+        }
+        @media (max-width: 900px) {
+            .main-layout { flex-direction: column; gap: 18px; }
+            .video-section, .analysis-panel { min-width: 0; }
+        }
+        @media (max-width: 768px) {
+            .container { padding: 8px; }
+            .logo-absolute { width: 60px; height: 30px; }
+            .header { padding: 10px 0 10px 10px; min-height: 48px; }
+            .header-texts h1 { font-size: 1.1rem; }
+            .header-texts p { font-size: 0.85rem; }
+            .main-layout { gap: 12px; }
+            .video-section, .analysis-panel, .charts-section { padding: 10px; }
+            .charts-container { grid-template-columns: 1fr; grid-template-rows: repeat(4, 1fr); height: auto; }
+        }
+        body {
+            background: #f2f4f8;
+        }
     </style>
 </head>
+
 <body>
     <div class="container">
         <div class="logo-absolute">
@@ -500,7 +375,6 @@
                 <p>실시간 작업자 안전 모니터링 + AI 분석 보고서 + 시각적 데이터 분석</p>
             </div>
         </div>
-
         <div class="controls">
             <button id="webcamModeBtn" class="btn btn-primary">웹캠 분석</button>
             <button id="videoModeBtn" class="btn btn-primary">동영상 분석</button>
@@ -508,113 +382,106 @@
             <button id="captureBtn" class="btn btn-success" style="display:none;">VLM 분석</button>
             <button id="stopBtn" class="btn btn-danger" disabled>중지</button>
         </div>
-
+        <!-- 영상+분석패널 2단 레이아웃 -->
         <div class="main-layout">
-            <div class="top-grid">
-                <div class="video-section">
-                    <div class="video-container">
-                        <video id="videoElement" autoplay muted playsinline></video>
-                        <canvas id="canvasElement"></canvas>
+            <!-- 영상/캔버스 -->
+            <div class="video-section">
+                <div class="video-container">
+                    <video id="videoElement" autoplay muted playsinline></video>
+                    <canvas id="canvasElement"></canvas>
+                </div>
+            </div>
+            <!-- 분석 패널 -->
+            <div class="analysis-panel">
+                <div id="statusCard" class="status-card">
+                    <h3>실시간 분석 상태</h3>
+                    <p id="statusText">카메라를 시작하여 분석을 시작하세요.</p>
+                </div>
+                <div id="metricsPanel" style="display: none;">
+                    <h3>자세 측정값</h3>
+                    <div class="metric">
+                        <span class="metric-label">척추 각도</span>
+                        <span id="spineAngle" class="metric-value good">-°</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-label">목 기울기</span>
+                        <span id="neckAngle" class="metric-value good">-°</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-label">어깨 균형</span>
+                        <span id="shoulderBalance" class="metric-value good">-°</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-label">무릎 각도</span>
+                        <span id="kneeAngle" class="metric-value good">-°</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-label">작업 강도</span>
+                        <span id="workIntensity" class="metric-value good">보통</span>
                     </div>
                 </div>
-
-                <div class="analysis-panel">
-                    <div id="statusCard" class="status-card">
-                        <h3>실시간 분석 상태</h3>
-                        <p id="statusText">카메라를 시작하여 분석을 시작하세요.</p>
-                    </div>
-
-                    <div id="metricsPanel" style="display: none;">
-                        <h3>자세 측정값</h3>
-                        <div class="metric">
-                            <span class="metric-label">척추 각도</span>
-                            <span id="spineAngle" class="metric-value good">-°</span>
-                        </div>
-                        <div class="metric">
-                            <span class="metric-label">목 기울기</span>
-                            <span id="neckAngle" class="metric-value good">-°</span>
-                        </div>
-                        <div class="metric">
-                            <span class="metric-label">어깨 균형</span>
-                            <span id="shoulderBalance" class="metric-value good">-°</span>
-                        </div>
-                        <div class="metric">
-                            <span class="metric-label">무릎 각도</span>
-                            <span id="kneeAngle" class="metric-value good">-°</span>
-                        </div>
-                        <div class="metric">
-                            <span class="metric-label">작업 강도</span>
-                            <span id="workIntensity" class="metric-value good">보통</span>
+                <div id="vlmAnalysisPanel" class="vlm-analysis" style="display: none;">
+                    <h3>AI 전문가 분석</h3>
+                    <div id="vlmContent">
+                        <div class="vlm-loading">
+                            <div class="loading-spinner"></div>
+                            <span>AI가 작업자의 자세를 분석 중입니다...</span>
                         </div>
                     </div>
-
-                    <div id="vlmAnalysisPanel" class="vlm-analysis" style="display: none;">
-                        <h3>AI 전문가 분석</h3>
-                        <div id="vlmContent">
-                            <div class="vlm-loading">
-                                <div class="loading-spinner"></div>
-                                <span>AI가 작업자의 자세를 분석 중입니다...</span>
-                            </div>
-                        </div>
+                </div>
+                <div class="snapshot-section" style="display: none;" id="snapshotSection">
+                    <h3>분석된 스냅샷</h3>
+                    <canvas id="snapshotCanvas"></canvas>
+                </div>
+                <div id="recommendationsPanel" class="recommendations" style="display: none;">
+                    <h3>개선 권장사항</h3>
+                    <ul id="recommendationsList"></ul>
+                </div>
+                <div id="eventTimeline" class="event-timeline" style="display: none;">
+                    <h3>이벤트 타임라인</h3>
+                    <ul id="eventTimelineList"></ul>
+                </div>
+            </div>
+        </div>
+        <!-- 차트는 영상+분석 아래 전체 너비로! -->
+        <div class="charts-section" id="chartsSection" style="display: none;">
+            <div class="charts-header">
+                <div class="charts-title">실시간 자세 분석 차트</div>
+                <div class="charts-stats">
+                    <div class="stat-item">
+                        <div class="stat-value" id="totalTime">00:00</div>
+                        <div class="stat-label">분석 시간</div>
                     </div>
-
-                    <div class="snapshot-section" style="display: none;" id="snapshotSection">
-                        <h3>분석된 스냅샷</h3>
-                        <canvas id="snapshotCanvas"></canvas>
+                    <div class="stat-item">
+                        <div class="stat-value" id="goodPostureRate">0%</div>
+                        <div class="stat-label">양호 자세율</div>
                     </div>
-
-                    <div id="recommendationsPanel" class="recommendations" style="display: none;">
-                        <h3>개선 권장사항</h3>
-                        <ul id="recommendationsList">
-                        </ul>
+                    <div class="stat-item">
+                        <div class="stat-value" id="avgSpineAngle">0°</div>
+                        <div class="stat-label">평균 척추각도</div>
                     </div>
-
-                    <div id="eventTimeline" class="event-timeline" style="display: none;">
-                        <h3>이벤트 타임라인</h3>
-                        <ul id="eventTimelineList"></ul>
+                    <div class="stat-item">
+                        <div class="stat-value" id="warningCount">0</div>
+                        <div class="stat-label">경고 횟수</div>
                     </div>
                 </div>
             </div>
-
-            <div class="charts-section" id="chartsSection" style="display: none;">
-                <div class="charts-header">
-                    <div class="charts-title">실시간 자세 분석 차트</div>
-                    <div class="charts-stats">
-                        <div class="stat-item">
-                            <div class="stat-value" id="totalTime">00:00</div>
-                            <div class="stat-label">분석 시간</div>
-                        </div>
-                        <div class="stat-item">
-                            <div class="stat-value" id="goodPostureRate">0%</div>
-                            <div class="stat-label">양호 자세율</div>
-                        </div>
-                        <div class="stat-item">
-                            <div class="stat-value" id="avgSpineAngle">0°</div>
-                            <div class="stat-label">평균 척추각도</div>
-                        </div>
-                        <div class="stat-item">
-                            <div class="stat-value" id="warningCount">0</div>
-                            <div class="stat-label">경고 횟수</div>
-                        </div>
-                    </div>
+            <div class="charts-container">
+                <div class="chart-card">
+                    <div class="chart-title">척추 각도 추이</div>
+                    <canvas id="spineChart" class="chart-canvas"></canvas>
                 </div>
-                <div class="charts-container">
-                    <div class="chart-card">
-                        <div class="chart-title">척추 각도 추이</div>
-                        <canvas id="spineChart" class="chart-canvas"></canvas>
-                    </div>
-                    <div class="chart-card">
-                        <div class="chart-title">목 기울기 추이</div>
-                        <canvas id="neckChart" class="chart-canvas"></canvas>
-                    </div>
-                    <div class="chart-card">
-                        <div class="chart-title">어깨 균형도</div>
-                        <canvas id="shoulderChart" class="chart-canvas"></canvas>
-                    </div>
-                    <div class="chart-card">
-                        <div class="chart-title">자세 품질 분포</div>
-                        <canvas id="qualityChart" class="chart-canvas"></canvas>
-                    </div>
+                <div class="chart-card">
+                    <div class="chart-title">목 기울기 추이</div>
+                    <canvas id="neckChart" class="chart-canvas"></canvas>
+                </div>
+                <div class="chart-card">
+                    <div class="chart-title">어깨 균형도</div>
+                    <canvas id="shoulderChart" class="chart-canvas"></canvas>
+                </div>
+                <div class="chart-card">
+                    <div class="chart-title">자세 품질 분포</div>
+                    <canvas id="qualityChart" class="chart-canvas"></canvas>
                 </div>
             </div>
         </div>
@@ -634,6 +501,8 @@
                 this.mode = 'webcam'; // 'webcam' or 'video'
                 this.uploadedVideoFile = null;
                 this.videoFrameTimer = null;
+                this.hands = null;
+                this.lastHandLandmarks = [];
 
                 // 차트 관련 데이터 추가
                 this.chartData = {
@@ -805,6 +674,17 @@
                     console.error('Error starting analysis:', error);
                     this.updateStatus('포즈 감지 시작 실패. 브라우저 권한을 확인하세요.', 'danger');
                 }
+
+                        this.startGeminiEventInterval();
+                // Hands 분석 시작
+                if (this.hands && this.camera) {
+                    this.camera.onFrame = async () => {
+                        if (this.isRunning) {
+                            await this.pose.send({image: this.video});
+                            await this.hands.send({image: this.video});
+                        }
+                    };
+                }
             }
 
             async startVideoAnalysis() {
@@ -887,8 +767,68 @@
                         this.onPoseResults(results);
                     });
                 }
+
+                if (!this.hands) {
+                    this.hands = new Hands({
+                        locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`
+                    });
+                    this.hands.setOptions({
+                        maxNumHands: 2,
+                        modelComplexity: 1,
+                        minDetectionConfidence: 0.3,
+                        minTrackingConfidence: 0.3
+                    });
+                    this.hands.onResults((results) => {
+                        this.onHandsResults(results);
+                    });
+                }
+                
             }
 
+                onHandsResults(results) {
+                    if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
+                        this.lastHandLandmarks = results.multiHandLandmarks;
+                        this.drawHandLandmarks(results.multiHandLandmarks);
+                    }
+                }
+
+                    drawHandLandmarks(handLandmarksList) {
+                        handLandmarksList.forEach(landmarks => {
+                            this.ctx.strokeStyle = '#2196f3';
+                            this.ctx.lineWidth = 4;
+                            // 손가락 연결선
+                            const fingers = [
+                                [0,1,2,3,4],    // 엄지
+                                [0,5,6,7,8],    // 검지
+                                [0,9,10,11,12], // 중지
+                                [0,13,14,15,16],// 약지
+                                [0,17,18,19,20] // 새끼
+                            ];
+                            fingers.forEach(finger => {
+                                this.ctx.beginPath();
+                                finger.forEach((idx, i) => {
+                                    const x = landmarks[idx].x * this.canvas.width;
+                                    const y = landmarks[idx].y * this.canvas.height;
+                                    if (i === 0) {
+                                        this.ctx.moveTo(x, y);
+                                    } else {
+                                        this.ctx.lineTo(x, y);
+                                    }
+                                });
+                                this.ctx.stroke();
+                            });
+                            // 관절점
+                            this.ctx.fillStyle = '#ff9800';
+                            landmarks.forEach(lm => {
+                                const x = lm.x * this.canvas.width;
+                                const y = lm.y * this.canvas.height;
+                                this.ctx.beginPath();
+                                this.ctx.arc(x, y, 5, 0, 2 * Math.PI);
+                                this.ctx.fill();
+                            });
+                        });
+                    }
+/*
             processVideoFrame() {
                 if (!this.isRunning || this.mode !== 'video') return;
                 if (this.video.paused || this.video.ended) {
@@ -902,6 +842,27 @@
                     this.pose.send({image: this.video});
                 }
                 this.videoFrameTimer = setTimeout(() => this.processVideoFrame(), 33);
+            }
+*/
+
+            async processVideoFrame() {
+                if (!this.isRunning || this.mode !== 'video') return;
+                if (this.video.paused || this.video.ended) return;
+                if (this.video.readyState === 4) {
+                    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+                    this.ctx.drawImage(this.video, 0, 0, this.canvas.width, this.canvas.height);
+                    await this.pose.send({image: this.video});
+                    await this.hands.send({image: this.video});
+                }
+                this.videoFrameTimer = setTimeout(() => this.processVideoFrame(), 33);
+            }
+
+            onHandsResults(results) {
+                if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
+                    this.lastHandLandmarks = results.multiHandLandmarks;
+                    // 캔버스에 손가락 관절을 즉시 그리려면 아래 코드 추가
+                    this.drawHandLandmarks(results.multiHandLandmarks);
+                }
             }
 
             onPoseResults(results) {
@@ -933,6 +894,11 @@
                         this.vlmAnalysisTriggered = false; // 다시 감지 안될 때는 재분석 허용
                     }
                 }
+
+                    // 2. 손(Hands) 랜드마크가 있으면 같이 그리기
+                    if (this.lastHandLandmarks && this.lastHandLandmarks.length > 0) {
+                        this.drawHandLandmarks(this.lastHandLandmarks);
+                    }
             }
 
             drawPoseLandmarks(landmarks) {
